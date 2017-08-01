@@ -10,7 +10,7 @@ import numpy as np
 from collections import deque
 import cv2
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 def record_audio():
 	CHUNK = 2048
@@ -78,8 +78,9 @@ def record_audio():
 	thefreq=0
 	frames = []
 	
-	for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
+	# for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
 		# while data != '':
+	while True:
 		data = stream.read(CHUNK)
 		# data=f.readframes(CHUNK)
 		# stream.write(data)
