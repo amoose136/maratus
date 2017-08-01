@@ -8,6 +8,9 @@ import sys
 from pdb import set_trace as br
 import numpy as np
 from collections import deque
+import cv2
+
+cap = cv2.VideoCapture(0)
 
 def record_audio():
 	CHUNK = 2048
@@ -25,7 +28,6 @@ def record_audio():
 			for _ in range(0,history_length):
 				self.state_list.append(False)	
 		def push(self,freq):
-			print(730 <= freq <= 760)
 			if 730 <= freq <= 760:
 				self.state_list.append(True)
 			else:
@@ -41,41 +43,46 @@ def record_audio():
 						# have just transitioned from lifting to not lifting. Take a picture.
 						# State must be: [false,true,true,true,true,...]
 						if i==len(self.state_list)-1:
-							print("take a picture")
+							print("Taking a picture")
+							ret, frame = cap.read()
+							if ret:
+								cv2.imwrite("test.jpg",frame)
+
 	ms=meta_state(10,746,100)
 	p = pyaudio.PyAudio()
 	SWIDTH=p.get_sample_size(FORMAT)
 	WINDOW = np.blackman(CHUNK)
 	
-	# #For live streaming:
-	# stream = p.open(format=FORMAT,
-	# 			channels=CHANNELS,
-	# 			rate=RATE,
-	# 			input=True,
-	# 			frames_per_buffer=CHUNK,
-	# 			input_device_index = 0)
-	# print("Listening like a spider on in a web...")
-	
-	# For streaming from wav file:
-	f = wave.open('lift.wav')
-	FORMAT=p.get_format_from_width(f.getsampwidth())
-	CHANNELS=f.getnchannels()
-	RATE=f.getframerate()
-	print("FORMAT: "+str(FORMAT)+"\nCHANNELS: "+str(CHANNELS)+"\nRATE: "+str(RATE))
+	#For live streaming:
 	stream = p.open(format=FORMAT,
 				channels=CHANNELS,
 				rate=RATE,
-				output=True)
-	data=f.readframes(CHUNK)
-	print("Processing file...")
+				input=True,
+				frames_per_buffer=CHUNK,
+				input_device_index = 0)
+	print("Listening like a spider on in a web...")
+	
+	## For streaming from wav file:
+	# f = wave.open('lift.wav')
+	# FORMAT=p.get_format_from_width(f.getsampwidth())
+	# CHANNELS=f.getnchannels()
+	# RATE=f.getframerate()
+	# print("FORMAT: "+str(FORMAT)+"\nCHANNELS: "+str(CHANNELS)+"\nRATE: "+str(RATE))
+	# stream = p.open(format=FORMAT,
+	# 			channels=CHANNELS,
+	# 			rate=RATE,
+	# 			output=True)
+	# data=f.readframes(CHUNK)
+	# print("Processing file...")
+	
 	thefreq=0
 	frames = []
 	
-	# for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
-	while data != '':
-		# data = stream.read(CHUNK)
-		data=f.readframes(CHUNK)
-		stream.write(data)
+	for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
+		# while data != '':
+		data = stream.read(CHUNK)
+		# data=f.readframes(CHUNK)
+		# stream.write(data)
 		
 		indata = np.array(wave.struct.unpack("%dh"%(len(data)/SWIDTH),data))*WINDOW
 		# Take the fft and square each value
