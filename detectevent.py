@@ -7,6 +7,7 @@ import wave
 import sys
 from pdb import set_trace as br
 import numpy as np
+from collections import deque
 
 def record_audio():
 	CHUNK = 2048
@@ -15,17 +16,48 @@ def record_audio():
 	RATE = 44100
 	RECORD_SECONDS = 25
 	WAVE_OUTPUT_FILENAME = "apt.wav"
+	class meta_state:
+		def __init__(self,history_length,target,tol):
+			self.state_list=deque([])
+			self.target_frequency=target
+			self.len=history_length
+			self.tolerance=tol
+			for _ in range(0,history_length):
+				self.state_list.append(False)	
+		def push(self,freq):
+			print(730 <= freq <= 760)
+			if 730 <= freq <= 760:
+				self.state_list.append(True)
+			else:
+				self.state_list.append(False)
+			self.state_list.popleft()
+			if self.state_list[-1]==False and self.state_list[-1]!=self.state_list[-2]:
+				for i in range(1,len(self.state_list)):
+					if self.state_list[-i-1]==self.state_list[-1]:
+						break
+					else:
+						#if the first element is not equal to any of the other elements
+						# in the list and the first element is false (not lifting), we
+						# have just transitioned from lifting to not lifting. Take a picture.
+						# State must be: [false,true,true,true,true,...]
+						if i==len(self.state_list)-1:
+							print("take a picture")
+	ms=meta_state(10,746,100)
 	p = pyaudio.PyAudio()
 	SWIDTH=p.get_sample_size(FORMAT)
 	WINDOW = np.blackman(CHUNK)
-	#open a wav format music
-	f = wave.open('lift.wav')
+	
+	# #For live streaming:
 	# stream = p.open(format=FORMAT,
 	# 			channels=CHANNELS,
 	# 			rate=RATE,
 	# 			input=True,
 	# 			frames_per_buffer=CHUNK,
 	# 			input_device_index = 0)
+	# print("Listening like a spider on in a web...")
+	
+	# For streaming from wav file:
+	f = wave.open('lift.wav')
 	FORMAT=p.get_format_from_width(f.getsampwidth())
 	CHANNELS=f.getnchannels()
 	RATE=f.getframerate()
@@ -34,9 +66,11 @@ def record_audio():
 				channels=CHANNELS,
 				rate=RATE,
 				output=True)
-	print("* Recording audio...")
-	frames = []
 	data=f.readframes(CHUNK)
+	print("Processing file...")
+	thefreq=0
+	frames = []
+	
 	# for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
 	while data != '':
 		# data = stream.read(CHUNK)
@@ -47,17 +81,19 @@ def record_audio():
 		# Take the fft and square each value
 		fftData=abs(np.fft.rfft(indata)**2)
 		# find the maximum
-		which = fftData[1:].argmax() + 1
+		maxi = fftData[1:].argmax() + 1
 		# use quadratic interpolation around the max
-		if which != len(fftData)-1:
-			y0,y1,y2 = np.log(fftData[which-1:which+2:])
+		if maxi != len(fftData)-1:
+			y0,y1,y2 = np.log(fftData[maxi-1:maxi+2:])
 			x1 = (y2 - y0) * .5 / (2 * y1 - y2 - y0)
 			# find the frequency and output it
-			thefreq = (which+x1)*RATE/CHUNK
-			print("The freq is %f Hz." % (thefreq))
+			thefreq = (maxi+x1)*RATE/CHUNK
+			# print("The freq is %f Hz." % (thefreq))
 		else:
-			thefreq = which*RATE/CHUNK
-			print("The freq is %f Hz." % (thefreq))
+			thefreq = maxi*RATE/CHUNK
+			# print("The freq is %f Hz." % (thefreq))
+		ms.push(thefreq)
+		# print(ms.state_list)
 		# frames.append(data)
 
 	print("* done\n") 
