@@ -9,18 +9,24 @@ from pdb import set_trace as br
 import numpy as np
 from collections import deque
 import cv2
-
-cap = cv2.VideoCapture(1)
+import time
 
 def record_audio():
-	CHUNK = 2048
+	CHUNK = 1024
 	FORMAT = pyaudio.paInt16
 	CHANNELS = 1
 	RATE = 44100
 	RECORD_SECONDS = 25
 	WAVE_OUTPUT_FILENAME = "apt.wav"
+	
 	class meta_state:
 		def __init__(self,history_length,target,tol):
+			self.cap = cv2.VideoCapture(1)
+			self.cap.set(cv2.CAP_PROP_CONTRAST, 5) 
+			self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, -1)
+			self.cap.set(cv2.CAP_PROP_EXPOSURE,-50) 
+			self.cap.set(cv2.CAP_PROP_BRIGHTNESS, 20) 
+			self.num=0
 			self.state_list=deque([])
 			self.target_frequency=target
 			self.len=history_length
@@ -43,10 +49,13 @@ def record_audio():
 						# have just transitioned from lifting to not lifting. Take a picture.
 						# State must be: [false,true,true,true,true,...]
 						if i==len(self.state_list)-1:
+							time.sleep(.15)
 							print("Taking a picture")
-							ret, frame = cap.read()
+							ret, frame = self.cap.read()
 							if ret:
-								cv2.imwrite("test.jpg",frame)
+								cv2.imwrite("test_"+str(self.num)+".jpg",frame)
+								self.num+=1
+							del ret,frame
 
 	ms=meta_state(10,746,100)
 	p = pyaudio.PyAudio()
@@ -81,7 +90,7 @@ def record_audio():
 	# for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
 		# while data != '':
 	while True:
-		data = stream.read(CHUNK)
+		data = stream.read(CHUNK,exception_on_overflow = False)
 		# data=f.readframes(CHUNK)
 		# stream.write(data)
 		
