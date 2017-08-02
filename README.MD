@@ -6,6 +6,12 @@ Maratus is a time-lapse camera for the Form 2 that hangs from a thread and follo
 
 ![Timelapse gif of floating print](https://github.com/amoose136/maratus/blob/master/video.gif "Timelapse")
 
+## Acknowledgments
+
+The logo I derived from editing and compositing together an image of a camera by [DG-RA on openclipart.org](https://openclipart.org/detail/275084/dslr-camera-+-lens-remix-hq) with an image of a Maratus Volans made by K.D. Schroeder (KDS4444 on wikimedia). This image is a previous version of Male_peacock_spider2.svg taken from wikimedia commons on a CC-BY-SA 3.0 license.
+
+The code is my own work but contains elements pasted from previous codes I worked on as well as small clippings from various stack overflow threads. I would cite each of these except that there are many and virtually no code from site is in a recognizable form anywhere in my code at this point. Neverthless I do wish to recognize the helpfulness of this community and point out that this project would not be possible without them. 
+
 ## Legal
 
 Project Copyright 2017 Amos Manneschmidt with the agreement to not enforce the copyright so long as the project contents are used in compliance with the Apache License 2.0:
