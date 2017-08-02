@@ -6,7 +6,7 @@ Maratus is a time-lapse camera for the Form 2 that hangs from a thread and follo
 
 ![Timelapse gif of floating print](https://github.com/amoose136/maratus/blob/master/video.gif "Timelapse")
 
-##Legal
+## Legal
 
 Project Copyright 2017 Amos Manneschmidt with the agreement to not enforce the copyright so long as the project contents are used in compliance with the Apache License 2.0:
 
